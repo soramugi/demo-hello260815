@@ -302,6 +302,13 @@
   <canvas id="confetti-canvas"></canvas>
 
   <main class="container">
+    <!-- サウンドON/OFFボタン -->
+    <div style="position: absolute; top: 20px; right: 25px;">
+      <button id="sound-toggle-btn" onclick="toggleSound()" style="background: rgba(255, 255, 255, 0.8); border: 2px solid #ffd3e2; border-radius: 50px; padding: 6px 14px; font-family: inherit; font-size: 0.85rem; font-weight: 700; color: var(--text-main); cursor: pointer; box-shadow: 0 4px 10px rgba(255, 143, 177, 0.2); transition: all 0.2s;">
+        🔊 サウンド: ON
+      </button>
+    </div>
+
     <span class="header-badge">🌸 本日の運勢占い 🌸</span>
     <h1>パステルおみくじ</h1>
 
@@ -328,11 +335,140 @@
   </main>
 
   <script>
+    // サウンド設定
+    let isSoundEnabled = true;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function toggleSound() {
+      initAudio();
+      isSoundEnabled = !isSoundEnabled;
+      const btn = document.getElementById("sound-toggle-btn");
+      if (isSoundEnabled) {
+        btn.textContent = "🔊 サウンド: ON";
+        btn.style.background = "rgba(255, 255, 255, 0.8)";
+        playSound('click');
+      } else {
+        btn.textContent = "🔇 サウンド: OFF";
+        btn.style.background = "rgba(230, 230, 230, 0.8)";
+      }
+    }
+
+    // 多彩でかわいい高品質サウンドエンジン（Web Audio API）
+    function playSound(type) {
+      if (!isSoundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'click') {
+        // ぷにっとかわいいクリック音
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(300, now + 0.08);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.08);
+
+      } else if (type === 'shake') {
+        // 木やおみくじの棒がガラガラ鳴る心地よい音
+        for (let i = 0; i < 3; i++) {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          const delay = i * 0.06;
+          const freq = 400 + Math.random() * 300;
+          osc.type = (i % 2 === 0) ? 'triangle' : 'sine';
+          osc.frequency.setValueAtTime(freq, now + delay);
+          osc.frequency.exponentialRampToValueAtTime(freq * 1.5, now + delay + 0.05);
+          gain.gain.setValueAtTime(0.12, now + delay);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.05);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + delay);
+          osc.stop(now + delay + 0.05);
+        }
+
+      } else if (type === 'daikichi') {
+        // 大吉：キラキラ輝く華やかなアルペジオ・ファンファーレ 🌟
+        const melody = [
+          { f: 523.25, d: 0.0 },   // C5
+          { f: 659.25, d: 0.08 },  // E5
+          { f: 783.99, d: 0.16 },  // G5
+          { f: 1046.50, d: 0.24 }, // C6
+          { f: 1318.51, d: 0.36 }, // E6
+          { f: 1567.98, d: 0.48 }, // G6
+          { f: 2093.00, d: 0.60 }  // C7 (高音キラキラ)
+        ];
+        melody.forEach(note => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(note.f, now + note.d);
+          gain.gain.setValueAtTime(0.18, now + note.d);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + note.d + 0.45);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + note.d);
+          osc.stop(now + note.d + 0.45);
+        });
+
+      } else if (type === 'chukichi') {
+        // 中吉・吉・小吉：明るくかわいいチャイム音 ✨
+        const melody = [
+          { f: 659.25, d: 0.0 },   // E5
+          { f: 783.99, d: 0.1 },   // G5
+          { f: 1046.50, d: 0.2 },  // C6
+          { f: 1318.51, d: 0.32 }  // E6
+        ];
+        melody.forEach(note => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(note.f, now + note.d);
+          gain.gain.setValueAtTime(0.15, now + note.d);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + note.d + 0.35);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + note.d);
+          osc.stop(now + note.d + 0.35);
+        });
+
+      } else if (type === 'kyo') {
+        // 凶：コミカルでやさしいポヨ〜ン音（励まし系）💫
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(220, now + 0.35);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      }
+    }
+
     // おみくじデータ一覧
     const fortunes = [
       {
         title: "大吉",
         className: "fortune-daikichi",
+        sound: "daikichi",
         icon: "🌟",
         desc: "最高の幸運が舞い降りる予感！すべてがうまくいくハッピーデイ✨",
         items: ["いちごパフェ", "ピンクのペン", "お気に入りの音楽", "ホットココア"],
@@ -341,6 +477,7 @@
       {
         title: "中吉",
         className: "fortune-chukichi",
+        sound: "chukichi",
         icon: "✨",
         desc: "素敵な出会いや嬉しい知らせがありそう！笑顔で過ごすと運気アップ♪",
         items: ["ふわふわタオル", "カフェラテ", "お花", "ブックカバー"],
@@ -349,6 +486,7 @@
       {
         title: "小吉",
         className: "fortune-shokichi",
+        sound: "chukichi",
         icon: "🍀",
         desc: "小さな幸せがたくさん見つかる日。のんびりお散歩が吉🌱",
         items: ["クッキー", "ハーブティー", "キーホルダー", "観葉植物"],
@@ -357,6 +495,7 @@
       {
         title: "吉",
         className: "fortune-kichi",
+        sound: "chukichi",
         icon: "🌸",
         desc: "穏やかで落ち着いた良い1日。マイペースに進めば道が開けます✨",
         items: ["お気に入りの本", "キャンディ", "手帳", "マグカップ"],
@@ -365,6 +504,7 @@
       {
         title: "末吉",
         className: "fortune-suekichi",
+        sound: "chukichi",
         icon: "☀️",
         desc: "後半に向けて運気上昇！コツコツ努力が大きな実を結びます🌼",
         items: ["新しいノート", "フルーツタルト", "ハンカチ", "スニーカー"],
@@ -373,6 +513,7 @@
       {
         title: "凶",
         className: "fortune-kyo",
+        sound: "kyo",
         icon: "💫",
         desc: "ここから運気は上がる一方！あたたかい飲み物を飲んでリラックスしてね☕",
         items: ["あたたかいココア", "ふかふかクッション", "お風呂", "好きな映画"],
@@ -390,47 +531,13 @@
     const luckyColor = document.getElementById("lucky-color");
     const drawBtn = document.getElementById("draw-btn");
 
-    // かわいいWeb Audio API効果音
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    function playSound(type) {
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-
-      if (type === 'shake') {
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.15);
-      } else if (type === 'fanfare') {
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C, E, G, C
-        notes.forEach((note, index) => {
-          const noteOsc = audioCtx.createOscillator();
-          const noteGain = audioCtx.createGain();
-          noteOsc.type = 'sine';
-          noteOsc.frequency.setValueAtTime(note, audioCtx.currentTime + index * 0.08);
-          noteGain.gain.setValueAtTime(0.12, audioCtx.currentTime + index * 0.08);
-          noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + index * 0.08 + 0.3);
-          noteOsc.connect(noteGain);
-          noteGain.connect(audioCtx.destination);
-          noteOsc.start(audioCtx.currentTime + index * 0.08);
-          noteOsc.stop(audioCtx.currentTime + index * 0.08 + 0.3);
-        });
-      }
-    }
-
     // おみくじを引くメイン関数
     function drawFortune() {
       if (isDrawing) return;
       isDrawing = true;
+      initAudio();
+      playSound('click');
+
       drawBtn.disabled = true;
       drawBtn.textContent = "シャッフル中... 🎋";
 
@@ -440,13 +547,13 @@
       omikujiBox.classList.add("shaking");
       omikujiBox.textContent = "🎍";
 
-      // シェイク音
+      // シェイク音（ガラガラ鳴らす）
       let count = 0;
       const shakeInterval = setInterval(() => {
         playSound('shake');
         count++;
-        if (count >= 3) clearInterval(shakeInterval);
-      }, 250);
+        if (count >= 4) clearInterval(shakeInterval);
+      }, 200);
 
       // 1.0秒後に結果表示
       setTimeout(() => {
@@ -468,8 +575,10 @@
         // 結果カードの表示アニメーション
         resultCard.classList.add("active");
 
-        // ファンファーレ音 & 紙吹雪
-        playSound('fanfare');
+        // 運勢に応じた専用サウンド再生
+        playSound(fortune.sound);
+
+        // 紙吹雪エフェクト
         startConfetti(fortune.title === "大吉" || fortune.title === "中吉");
 
         // ボタンのラベル切り替え
