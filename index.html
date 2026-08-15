@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✨ かわいいパステルおみくじ ✨</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #ffeef8 0%, #f0e6ff 50%, #e8f4fd 100%);
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-border: rgba(255, 255, 255, 0.9);
+      --primary-pink: #ff8fb1;
+      --primary-pink-hover: #ff759f;
+      --pastel-purple: #c3aed6;
+      --pastel-yellow: #ffd3b6;
+      --pastel-mint: #b8e0d2;
+      --text-main: #5c4b51;
+      --text-sub: #8c7a80;
+      --shadow-soft: 0 15px 35px rgba(214, 174, 203, 0.35), 0 5px 15px rgba(0, 0, 0, 0.05);
+      --shadow-btn: 0 8px 20px rgba(255, 143, 177, 0.4);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Zen Maru Gothic', sans-serif;
+      background: var(--bg-gradient);
+      background-size: 200% 200%;
+      animation: gradientFlow 12s ease infinite;
+      overflow-x: hidden;
+      padding: 20px;
+      position: relative;
+    }
+
+    @keyframes gradientFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* 背景の浮かぶデコレーション */
+    .floating-bubbles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: floatUp 8s infinite linear;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(100vh) rotate(0deg) scale(0.8);
+        opacity: 0;
+      }
+      20% {
+        opacity: 0.6;
+      }
+      80% {
+        opacity: 0.6;
+      }
+      100% {
+        transform: translateY(-10vh) rotate(360deg) scale(1.1);
+        opacity: 0;
+      }
+    }
+
+    /* メインコンテナ */
+    .container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 480px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 36px;
+      border: 3px solid var(--card-border);
+      box-shadow: var(--shadow-soft);
+      padding: 40px 30px;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+
+    .header-badge {
+      display: inline-block;
+      padding: 6px 18px;
+      background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+      color: #784732;
+      border-radius: 20px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 10px rgba(250, 177, 160, 0.35);
+    }
+
+    h1 {
+      font-size: 1.85rem;
+      font-weight: 900;
+      color: var(--text-main);
+      margin-bottom: 24px;
+      letter-spacing: 0.5px;
+    }
+
+    /* おみくじの筒・イラストエリア */
+    .omikuji-box-wrapper {
+      position: relative;
+      height: 180px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 10px 0 25px;
+    }
+
+    .omikuji-box {
+      font-size: 5.5rem;
+      transition: transform 0.2s ease;
+      cursor: pointer;
+      filter: drop-shadow(0 10px 15px rgba(200, 150, 180, 0.25));
+    }
+
+    /* シェイクアニメーション */
+    .shaking {
+      animation: shakeAnimation 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+    }
+
+    @keyframes shakeAnimation {
+      0%, 100% { transform: rotate(0deg) translateY(0); }
+      20% { transform: rotate(-18deg) translateY(-8px); }
+      40% { transform: rotate(18deg) translateY(-4px); }
+      60% { transform: rotate(-12deg) translateY(-6px); }
+      80% { transform: rotate(12deg) translateY(-2px); }
+    }
+
+    /* 結果カード */
+    .result-card {
+      min-height: 220px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: #ffffff;
+      border-radius: 28px;
+      border: 2px dashed #f6c8d7;
+      margin-bottom: 25px;
+      box-shadow: inset 0 2px 8px rgba(255, 230, 240, 0.5);
+    }
+
+    .result-card.active {
+      display: flex;
+      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.6) rotate(-5deg);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+      }
+    }
+
+    .result-label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+    }
+
+    /* 結果の大きな文字 */
+    .result-title {
+      font-size: 4rem;
+      font-weight: 900;
+      line-height: 1.1;
+      margin: 8px 0 14px;
+      letter-spacing: 4px;
+      text-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      position: relative;
+    }
+
+    /* 運勢ごとのカラー */
+    .fortune-daikichi { color: #ff5277; text-shadow: 0 4px 12px rgba(255, 82, 119, 0.35); }
+    .fortune-chukichi { color: #ff8c42; text-shadow: 0 4px 12px rgba(255, 140, 66, 0.3); }
+    .fortune-shokichi { color: #20bf6b; text-shadow: 0 4px 12px rgba(32, 191, 107, 0.3); }
+    .fortune-kichi    { color: #4b7bec; text-shadow: 0 4px 12px rgba(75, 123, 236, 0.3); }
+    .fortune-suekichi { color: #8854d0; text-shadow: 0 4px 12px rgba(136, 84, 208, 0.3); }
+    .fortune-kyo      { color: #778ca3; text-shadow: 0 4px 12px rgba(119, 140, 163, 0.3); }
+
+    .result-desc {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .lucky-info {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .lucky-tag {
+      padding: 6px 14px;
+      background: #fdf0f4;
+      color: #a85870;
+      border-radius: 14px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: 1px solid #fedfe8;
+    }
+
+    /* アクションボタン */
+    .btn-draw {
+      width: 100%;
+      padding: 18px 24px;
+      font-family: inherit;
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #ffffff;
+      background: linear-gradient(135deg, #ff9bb6, #ff7597);
+      border: none;
+      border-radius: 24px;
+      cursor: pointer;
+      box-shadow: var(--shadow-btn);
+      letter-spacing: 1.5px;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-draw:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px rgba(255, 117, 151, 0.5);
+      background: linear-gradient(135deg, #ffaec4, #ff85a3);
+    }
+
+    .btn-draw:active {
+      transform: translateY(1px);
+      box-shadow: 0 4px 10px rgba(255, 117, 151, 0.4);
+    }
+
+    .btn-draw:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* 紙吹雪Canvas */
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* フッター */
+    footer {
+      margin-top: 24px;
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 浮遊するパステル背景パーツ -->
+  <div class="floating-bubbles" id="bubble-container"></div>
+
+  <!-- 紙吹雪用Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <main class="container">
+    <span class="header-badge">🌸 本日の運勢占い 🌸</span>
+    <h1>パステルおみくじ</h1>
+
+    <!-- アニメーション表示エリア -->
+    <div class="omikuji-box-wrapper" id="box-wrapper">
+      <div class="omikuji-box" id="omikuji-box" title="タップして引く！">🎋</div>
+    </div>
+
+    <!-- 結果カード -->
+    <div class="result-card" id="result-card">
+      <div class="result-label">あなたの運勢は…</div>
+      <div class="result-title" id="result-title">大吉</div>
+      <p class="result-desc" id="result-desc">最高の1日になりそう！願い事が叶うかも✨</p>
+      <div class="lucky-info">
+        <div class="lucky-tag" id="lucky-item">🎁 ラッキーアイテム: いちごパフェ</div>
+        <div class="lucky-tag" id="lucky-color">🎨 ラッキーカラー: サクラピンク</div>
+      </div>
+    </div>
+
+    <!-- ボタン -->
+    <button class="btn-draw" id="draw-btn" onclick="drawFortune()">おみくじを引く 🎀</button>
+
+    <footer>今日も素敵な1日になりますように ✨</footer>
+  </main>
+
+  <script>
+    // おみくじデータ一覧
+    const fortunes = [
+      {
+        title: "大吉",
+        className: "fortune-daikichi",
+        icon: "🌟",
+        desc: "最高の幸運が舞い降りる予感！すべてがうまくいくハッピーデイ✨",
+        items: ["いちごパフェ", "ピンクのペン", "お気に入りの音楽", "ホットココア"],
+        colors: ["パステルピンク", "シャンパンゴールド", "スカイブルー"]
+      },
+      {
+        title: "中吉",
+        className: "fortune-chukichi",
+        icon: "✨",
+        desc: "素敵な出会いや嬉しい知らせがありそう！笑顔で過ごすと運気アップ♪",
+        items: ["ふわふわタオル", "カフェラテ", "お花", "ブックカバー"],
+        colors: ["アプリコットオレンジ", "ミントグリーン", "ハニーイエロー"]
+      },
+      {
+        title: "小吉",
+        className: "fortune-shokichi",
+        icon: "🍀",
+        desc: "小さな幸せがたくさん見つかる日。のんびりお散歩が吉🌱",
+        items: ["クッキー", "ハーブティー", "キーホルダー", "観葉植物"],
+        colors: ["フォレストグリーン", "レモンシフォン", "ミルクホワイト"]
+      },
+      {
+        title: "吉",
+        className: "fortune-kichi",
+        icon: "🌸",
+        desc: "穏やかで落ち着いた良い1日。マイペースに進めば道が開けます✨",
+        items: ["お気に入りの本", "キャンディ", "手帳", "マグカップ"],
+        colors: ["ラベンダーパープル", "ベビーブルー", "サクラピンク"]
+      },
+      {
+        title: "末吉",
+        className: "fortune-suekichi",
+        icon: "☀️",
+        desc: "後半に向けて運気上昇！コツコツ努力が大きな実を結びます🌼",
+        items: ["新しいノート", "フルーツタルト", "ハンカチ", "スニーカー"],
+        colors: ["キャメルベージュ", "ライラック", "ペールオレンジ"]
+      },
+      {
+        title: "凶",
+        className: "fortune-kyo",
+        icon: "💫",
+        desc: "ここから運気は上がる一方！あたたかい飲み物を飲んでリラックスしてね☕",
+        items: ["あたたかいココア", "ふかふかクッション", "お風呂", "好きな映画"],
+        colors: ["スモーキーピンク", "シルバーグレー", "ネイビー"]
+      }
+    ];
+
+    let isDrawing = false;
+    const boxWrapper = document.getElementById("box-wrapper");
+    const omikujiBox = document.getElementById("omikuji-box");
+    const resultCard = document.getElementById("result-card");
+    const resultTitle = document.getElementById("result-title");
+    const resultDesc = document.getElementById("result-desc");
+    const luckyItem = document.getElementById("lucky-item");
+    const luckyColor = document.getElementById("lucky-color");
+    const drawBtn = document.getElementById("draw-btn");
+
+    // かわいいWeb Audio API効果音
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'shake') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+      } else if (type === 'fanfare') {
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C, E, G, C
+        notes.forEach((note, index) => {
+          const noteOsc = audioCtx.createOscillator();
+          const noteGain = audioCtx.createGain();
+          noteOsc.type = 'sine';
+          noteOsc.frequency.setValueAtTime(note, audioCtx.currentTime + index * 0.08);
+          noteGain.gain.setValueAtTime(0.12, audioCtx.currentTime + index * 0.08);
+          noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + index * 0.08 + 0.3);
+          noteOsc.connect(noteGain);
+          noteGain.connect(audioCtx.destination);
+          noteOsc.start(audioCtx.currentTime + index * 0.08);
+          noteOsc.stop(audioCtx.currentTime + index * 0.08 + 0.3);
+        });
+      }
+    }
+
+    // おみくじを引くメイン関数
+    function drawFortune() {
+      if (isDrawing) return;
+      isDrawing = true;
+      drawBtn.disabled = true;
+      drawBtn.textContent = "シャッフル中... 🎋";
+
+      // 結果カードを一旦隠す
+      resultCard.classList.remove("active");
+      boxWrapper.style.display = "flex";
+      omikujiBox.classList.add("shaking");
+      omikujiBox.textContent = "🎍";
+
+      // シェイク音
+      let count = 0;
+      const shakeInterval = setInterval(() => {
+        playSound('shake');
+        count++;
+        if (count >= 3) clearInterval(shakeInterval);
+      }, 250);
+
+      // 1.0秒後に結果表示
+      setTimeout(() => {
+        omikujiBox.classList.remove("shaking");
+        boxWrapper.style.display = "none";
+
+        // ランダムに結果を取得
+        const fortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+        const item = fortune.items[Math.floor(Math.random() * fortune.items.length)];
+        const color = fortune.colors[Math.floor(Math.random() * fortune.colors.length)];
+
+        // クラスのリセットと設定
+        resultTitle.className = "result-title " + fortune.className;
+        resultTitle.textContent = fortune.title;
+        resultDesc.textContent = fortune.desc;
+        luckyItem.textContent = "🎁 ラッキーアイテム: " + item;
+        luckyColor.textContent = "🎨 ラッキーカラー: " + color;
+
+        // 結果カードの表示アニメーション
+        resultCard.classList.add("active");
+
+        // ファンファーレ音 & 紙吹雪
+        playSound('fanfare');
+        startConfetti(fortune.title === "大吉" || fortune.title === "中吉");
+
+        // ボタンのラベル切り替え
+        drawBtn.disabled = false;
+        drawBtn.textContent = "もう一度引く 🔄";
+        isDrawing = false;
+      }, 1000);
+    }
+
+    // 紙吹雪アニメーション
+    const canvas = document.getElementById("confetti-canvas");
+    const ctx = canvas.getContext("2d");
+    let confettiList = [];
+    const pastelColors = ["#ff9bb6", "#c3aed6", "#ffd3b6", "#b8e0d2", "#a8e6cf", "#ffaaa5", "#fdcb6e"];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    function startConfetti(isBig) {
+      confettiList = [];
+      const particleCount = isBig ? 90 : 45;
+      for (let i = 0; i < particleCount; i++) {
+        confettiList.push({
+          x: canvas.width / 2 + (Math.random() * 80 - 40),
+          y: canvas.height / 2,
+          r: Math.random() * 8 + 4,
+          dx: (Math.random() - 0.5) * 16,
+          dy: (Math.random() - 1.2) * 14,
+          color: pastelColors[Math.floor(Math.random() * pastelColors.length)],
+          tilt: Math.random() * 10,
+          tiltAngle: 0,
+          tiltAngleInc: Math.random() * 0.08 + 0.04,
+          opacity: 1
+        });
+      }
+    }
+
+    function updateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < confettiList.length; i++) {
+        const p = confettiList[i];
+        p.x += p.dx;
+        p.y += p.dy;
+        p.dy += 0.35; // 重力
+        p.tiltAngle += p.tiltAngleInc;
+        p.tilt = Math.sin(p.tiltAngle) * 15;
+        p.opacity -= 0.012;
+
+        if (p.opacity > 0) {
+          ctx.beginPath();
+          ctx.lineWidth = p.r / 2;
+          ctx.strokeStyle = p.color;
+          ctx.globalAlpha = p.opacity;
+          ctx.moveTo(p.x + p.tilt + p.r, p.y);
+          ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+          ctx.stroke();
+        }
+      }
+      confettiList = confettiList.filter(p => p.opacity > 0);
+      requestAnimationFrame(updateConfetti);
+    }
+    updateConfetti();
+
+    // 背景のふんわりバブル生成
+    function createBubbles() {
+      const container = document.getElementById("bubble-container");
+      const bubbleColors = ["#ffe5ec", "#f0e6ff", "#e8f4fd", "#e8f8f5", "#fff4e6"];
+      for (let i = 0; i < 15; i++) {
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+        const size = Math.random() * 60 + 20;
+        bubble.style.width = size + "px";
+        bubble.style.height = size + "px";
+        bubble.style.left = Math.random() * 100 + "%";
+        bubble.style.background = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
+        bubble.style.animationDuration = (Math.random() * 6 + 6) + "s";
+        bubble.style.animationDelay = (Math.random() * 5) + "s";
+        container.appendChild(bubble);
+      }
+    }
+    createBubbles();
+  </script>
+</body>
+</html>
